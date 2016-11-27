@@ -1,52 +1,68 @@
-language: android
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - libs.zip
+    - build.zip
+    - testbuild.zip
+    - jacoco.exec
+    target_paths: 529f6eec-ef01-4a68-b4d3-cbed597ca313
+after_success:
+- ' wget --content-disposition http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.7.201606060606/jacoco-0.7.7.201606060606.zip '
+- ' unzip -o jacoco-0.7.7.201606060606.zip  '
+- ' cd lib  '
+- ' mv * ../  '
+- ' cd ..  '
+- ' chmod a+x *  '
+- ' cd $PWD  '
+- ' rm  ''jacoco.exec'''
+- ' export JAVA_TOOL_OPTIONS=-javaagent:$PWD/jacocoagent.jar=destfile=$PWD/jacoco.exec,append=true  '
+- ' travis_wait 720 mvn  test -Dmaven.test.failure.ignore=true -Djacoco.skip=true
+  -Dcobertura.skip=true -Dmaven.clover.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+  -Drat.ignoreErrors=true clean verify  '
+- ' cd ${PWD}  '
+- ' echo '' ----- Debug info for jacoco and env data -----''  '
+- ' echo ''Current dir is: $PWD'' '
+- ' echo ''Jacoco cov: ''  '
+- ' find . -name ''*.exec''  '
+- ' echo '' ----------------------------------------------'' '
+- ./df-build.sh
 android:
   components:
-    - build-tools-23.0.2
-    - extra-google-m2repository
-    - extra-android-m2repository
-    - android-16
-    - sysimg-16
+  - build-tools-23.0.2
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - android-16
+  - sysimg-16
   licences:
-    - android-sdk-license-bcbbd656
-    - '.*intel.+'
-
-notifications:
-  email: false
-  irc:
-    channels:
-      - "irc.freenode.org#selendroid"
-    on_success: always
-    on_failure: always
-    use_notice: true
-  
-branches:
-  only:
-    - master
-
+  - android-sdk-license-bcbbd656
+  - .*intel.+
 before_install:
-  # Comment gradle build command to use maven and vice versa
-  - wget http://services.gradle.org/distributions/gradle-2.7-bin.zip
-  - unzip -qq gradle-2.7-bin.zip
-  - export GRADLE_HOME=$PWD/gradle-2.7
-  - export PATH=$GRADLE_HOME/bin:$PATH
-  - "git clone -b travis `git config --get remote.origin.url` target/travis"
-
-  # Maven
-  # - "mvn --version"
-  # - "cd third-party/"
-  # - "./mvnInstall.sh"
-  # - "cd ../"
-
+- wget http://services.gradle.org/distributions/gradle-2.7-bin.zip
+- unzip -qq gradle-2.7-bin.zip
+- export GRADLE_HOME=$PWD/gradle-2.7
+- export PATH=$GRADLE_HOME/bin:$PATH
+- git clone -b travis `git config --get remote.origin.url` target/travis
 before_script:
-  - echo no | android create avd --force -n l10n -t android-16 --abi armeabi-v7a
-
-script: 
-  - "gradle clean build"
-
-  # Maven
-  #  - "[ ${TRAVIS_PULL_REQUEST} = 'false' ] && mvn clean deploy --settings target/travis/settings.xml || mvn clean verify --settings target/travis/settings.xml"
-
+- echo no | android create avd --force -n l10n -t android-16 --abi armeabi-v7a
+branches: ''
+cache:
+  directories:
+  - $HOME/.m2
 env:
   global:
-    - secure: "qOCTIN+N9lYVx/rp7Qu5xcyaFPLsf64UYSOY5dq+4jOx5vokQfb0vwFxKyDJcUD7ow3GMhw11280HE2OZ3Xk+1xRGWND5Axhey8BPOjqT9D+vjKY2o2Q2ZmUbBTapL/lDixjnV9Gk/bJLytPLNaaA7S/HNfp0g03bWhLanz5fgg="
-    - secure: "BzwsXUidLx7X733KzZDwvuXsIiFD0WazDABk8FM3BuvkJnGd8xp84A0ZwZ76PYvrxWp/MncyaOytkrnNA86rnBmpWvcnWzEuBVoDY/cEc4q1SnLjgsRByanNBPoYopFHAVRI2zvkU8hSBVFZC2+ABi3vpNhgYr0LtBhZouBTX5E="
+  - secure: qOCTIN+N9lYVx/rp7Qu5xcyaFPLsf64UYSOY5dq+4jOx5vokQfb0vwFxKyDJcUD7ow3GMhw11280HE2OZ3Xk+1xRGWND5Axhey8BPOjqT9D+vjKY2o2Q2ZmUbBTapL/lDixjnV9Gk/bJLytPLNaaA7S/HNfp0g03bWhLanz5fgg=
+  - secure: BzwsXUidLx7X733KzZDwvuXsIiFD0WazDABk8FM3BuvkJnGd8xp84A0ZwZ76PYvrxWp/MncyaOytkrnNA86rnBmpWvcnWzEuBVoDY/cEc4q1SnLjgsRByanNBPoYopFHAVRI2zvkU8hSBVFZC2+ABi3vpNhgYr0LtBhZouBTX5E=
+jdk:
+- oraclejdk8
+language: android
+notifications:
+  webhooks:
+    on_failure: always
+    on_start: always
+    on_success: always
+    urls:
+    - http://insights-portal-insights-service-webserver-dev.public-swarm.devfactory.com/travisWebHookListener?build_id=529f6eec-ef01-4a68-b4d3-cbed597ca313
+script:
+- gradle clean build
+# Modified by Insights Service at 2016-11-27 18:42:57.012818
